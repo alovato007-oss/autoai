@@ -37,15 +37,11 @@ export default function Home() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("leads")
-        .select("id, lead_score, status, pipeline_value");
+      const { data, error } = await supabase.from("leads").select("id, lead_score, status, pipeline_value");
 
       if (!error && data) {
         const qualified = data.filter((lead) => (lead.lead_score ?? 0) >= 80).length;
-        const opportunities = data.filter((lead) =>
-          ["qualified", "opportunity", "won"].includes(String(lead.status).toLowerCase())
-        ).length;
+        const opportunities = data.filter((lead) => ["qualified", "opportunity", "won"].includes(String(lead.status).toLowerCase())).length;
         const pipeline = data.reduce((sum, lead) => sum + Number(lead.pipeline_value ?? 0), 0);
         setMetrics([
           ["Prospects Found", String(data.length)],
@@ -54,17 +50,11 @@ export default function Home() {
           ["Pipeline", `$${pipeline.toLocaleString()}`],
         ]);
       } else {
-        setMetrics([
-          ["Prospects Found", "0"],
-          ["Qualified", "0"],
-          ["Opportunities", "0"],
-          ["Pipeline", "$0"],
-        ]);
+        setMetrics([["Prospects Found", "0"], ["Qualified", "0"], ["Opportunities", "0"], ["Pipeline", "$0"]]);
         setMessage("Supabase is connected, but the leads table could not be read.");
       }
       setLoading(false);
     }
-
     loadMetrics();
   }, []);
 
@@ -73,7 +63,6 @@ export default function Home() {
     setScoring(true);
     setMessage("");
     setResult(null);
-
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(form.entries());
 
@@ -107,10 +96,11 @@ export default function Home() {
         <section className="hero">
           <div className="eyebrow">Revenue Command Center</div>
           <h1 className="title">Turn market intelligence into pipeline.</h1>
-          <p className="subtitle">
-            AutoAI finds prospects, researches companies, scores opportunities, and turns qualified intelligence into a measurable sales pipeline.
-          </p>
-          <a className="cta" href="#scorer">Score a Lead <span>→</span></a>
+          <p className="subtitle">AutoAI finds prospects, researches companies, scores opportunities, and turns qualified intelligence into a measurable sales pipeline.</p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a className="cta" href="#scorer">Score a Lead <span>→</span></a>
+            <a className="cta" href="/api/checkout">Start AutoAI Pro — $299/mo <span>→</span></a>
+          </div>
         </section>
 
         <section className="grid" aria-label="Pipeline metrics">
@@ -124,18 +114,12 @@ export default function Home() {
 
         <section className="section" id="pipeline">
           <div className="section-heading">
-            <div>
-              <div className="eyebrow">Workflow</div>
-              <h2>Lead Engine Pipeline</h2>
-            </div>
+            <div><div className="eyebrow">Workflow</div><h2>Lead Engine Pipeline</h2></div>
             <span className="live-pill">LIVE SYSTEM</span>
           </div>
           <div className="pipeline">
             {stages.map((stage, index) => (
-              <div className="stage" key={stage}>
-                <span className="stage-number">0{index + 1}</span>
-                <span>{stage}</span>
-              </div>
+              <div className="stage" key={stage}><span className="stage-number">0{index + 1}</span><span>{stage}</span></div>
             ))}
           </div>
         </section>
@@ -169,6 +153,16 @@ export default function Home() {
               </div>
             </div>
           )}
+        </section>
+
+        <section className="section" id="pricing">
+          <div className="section-heading"><div><div className="eyebrow">Simple pricing</div><h2>Start with AutoAI Pro</h2></div></div>
+          <div className="card" style={{ maxWidth: 520 }}>
+            <div className="label">AI Revenue Employee</div>
+            <div className="value">$299<span style={{ fontSize: 18, opacity: 0.6 }}>/month</span></div>
+            <p style={{ opacity: 0.75, lineHeight: 1.6 }}>AI prospect scoring, qualification, follow-up workflows, and revenue intelligence for your sales pipeline.</p>
+            <a className="cta" href="/api/checkout">Start AutoAI Pro →</a>
+          </div>
         </section>
 
         <footer className="footer">AutoAI · AI-powered prospecting and revenue intelligence</footer>
