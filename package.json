@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {"dev": "next dev", "build": "next build", "start": "next start", "lint": "next lint"},
   "dependencies": {
+    "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@vercel/speed-insights": "latest",
     "next": "latest",
