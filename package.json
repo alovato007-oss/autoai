@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
-    "@vercel/analytics": "^2.0.1",
+
+    "@vercel/speed-insights": "latest",
+
     "next": "latest",
     "openai": "latest",
     "react": "latest",
