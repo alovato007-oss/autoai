@@ -1,0 +1,35 @@
+version: 1
+system: JARVIS
+source_of_truth: Obsidian
+memory_types:
+  - short_term
+  - episodic
+  - semantic
+  - procedural
+  - long_term
+statuses:
+  - PLANNED
+  - QUEUED
+  - RUNNING
+  - COMPLETED
+  - FAILED
+  - VERIFIED
+colors:
+  knowledge: blue
+  intelligence: purple
+  verified: green
+  pending: yellow
+  error: red
+  mission: orange
+  integration: cyan
+required_memory_fields:
+  - id
+  - type
+  - status
+  - created
+  - source
+  - importance
+  - relationships
+verification:
+  required_for_completion: true
+  evidence_required: true
