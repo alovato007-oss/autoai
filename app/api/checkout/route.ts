@@ -3,13 +3,15 @@ import Stripe from "stripe";
 
 export const runtime = "nodejs";
 
+const JARVIS_PRICE_ID = "price_1U4CwwIQUeDqIdTjRXCfZXlx";
+
 export async function GET(request: Request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  const priceId = process.env.STRIPE_PRICE_ID;
+  const priceId = process.env.STRIPE_PRICE_ID || JARVIS_PRICE_ID;
 
-  if (!secretKey || !priceId) {
+  if (!secretKey) {
     return NextResponse.json(
-      { error: "Stripe checkout is not configured. Set STRIPE_SECRET_KEY and STRIPE_PRICE_ID." },
+      { error: "Stripe checkout is not configured. Set STRIPE_SECRET_KEY." },
       { status: 500 }
     );
   }
@@ -25,8 +27,8 @@ export async function GET(request: Request) {
       allow_promotion_codes: true,
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
-      metadata: { product: "autoai_pro", plan: "pro" },
-      subscription_data: { metadata: { product: "autoai_pro", plan: "pro" } },
+      metadata: { product: "autoai_jarvis_growth", plan: "jarvis_growth_1500" },
+      subscription_data: { metadata: { product: "autoai_jarvis_growth", plan: "jarvis_growth_1500" } },
     });
 
     if (!session.url) {
