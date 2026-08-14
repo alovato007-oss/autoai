@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 const stages = ["Discover", "Research", "Score", "Review", "Revenue"];
+const PAYMENT_LINK = "https://buy.stripe.com/dRm6oI18X6qAfSN4Qb83C04";
 
 type ScoreResult = {
   score: number;
@@ -88,7 +89,7 @@ export default function Home() {
         <div className="brand">AUTOAI</div>
         <div className="nav-right">
           <span className="status"><span className="dot" /> AI Revenue Engine</span>
-          <div className="badge">MVP</div>
+          <div className="badge">LIVE OFFER</div>
         </div>
       </nav>
 
@@ -99,7 +100,7 @@ export default function Home() {
           <p className="subtitle">AutoAI finds prospects, researches companies, scores opportunities, and turns qualified intelligence into a measurable sales pipeline.</p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a className="cta" href="#scorer">Score a Lead <span>→</span></a>
-            <a className="cta" href="/api/checkout">Start AutoAI Pro — $299/mo <span>→</span></a>
+            <a className="cta" href={PAYMENT_LINK}>Start JARVIS Growth — $1,500/mo <span>→</span></a>
           </div>
         </section>
 
@@ -156,16 +157,16 @@ export default function Home() {
         </section>
 
         <section className="section" id="pricing">
-          <div className="section-heading"><div><div className="eyebrow">Simple pricing</div><h2>Start with AutoAI Pro</h2></div></div>
-          <div className="card" style={{ maxWidth: 520 }}>
-            <div className="label">AI Revenue Employee</div>
-            <div className="value">$299<span style={{ fontSize: 18, opacity: 0.6 }}>/month</span></div>
-            <p style={{ opacity: 0.75, lineHeight: 1.6 }}>AI prospect scoring, qualification, follow-up workflows, and revenue intelligence for your sales pipeline.</p>
-            <a className="cta" href="/api/checkout">Start AutoAI Pro →</a>
+          <div className="section-heading"><div><div className="eyebrow">Managed AI automation</div><h2>JARVIS Growth Automation</h2></div></div>
+          <div className="card" style={{ maxWidth: 620 }}>
+            <div className="label">Managed AI Revenue System</div>
+            <div className="value">$1,500<span style={{ fontSize: 18, opacity: 0.6 }}>/month</span></div>
+            <p style={{ opacity: 0.75, lineHeight: 1.6 }}>Lead qualification, personalized outreach, follow-up, appointment conversion, CRM updates, reporting, and verified JARVIS execution.</p>
+            <a className="cta" href={PAYMENT_LINK}>Start JARVIS Growth →</a>
           </div>
         </section>
 
-        <footer className="footer">AutoAI · AI-powered prospecting and revenue intelligence</footer>
+        <footer className="footer">AutoAI · JARVIS-powered business automation</footer>
       </main>
     </div>
   );
