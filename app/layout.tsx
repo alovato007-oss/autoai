@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Analytics } from '@vercel/analytics/next';
-import "./globals.css";
+
 
 export const metadata: Metadata = {
   title: "AutoAI — Revenue Engine",
@@ -13,7 +12,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <Analytics />
-      </body>
-    </html>
-  );
-}

@@ -1,0 +1,122 @@
+{
+  "name": "JARVIS — Core Event Router",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jarvis/events",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "jarvis-webhook",
+      "name": "JARVIS Event Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-720, 0],
+      "webhookId": "jarvis-events"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst event = body.event ?? body.type;\nconst eventId = body.event_id ?? crypto.randomUUID();\nconst receivedAt = new Date().toISOString();\nreturn [{ json: { event_id: eventId, event, received_at: receivedAt, source: body.source ?? 'n8n', payload: body.payload ?? body } }];"
+      },
+      "id": "normalize-event",
+      "name": "Normalize Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-480, 0]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            { "conditions": { "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.event }}", "rightValue": "lead.created", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.event }}", "rightValue": "lead.missed_call", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.event }}", "rightValue": "appointment.booked", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.event }}", "rightValue": "stripe.subscription.updated", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } },
+            { "conditions": { "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.event }}", "rightValue": "verification.completed", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route-event",
+      "name": "Route Event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [-240, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_EVENT_INGEST_URL }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "persist-event",
+      "name": "Persist Event to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [20, -260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.JARVIS_ORCHESTRATOR_URL }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{$env.JARVIS_INTERNAL_TOKEN}}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_id: $json.event_id, event: $json.event, payload: $json.payload }) }}",
+        "options": {}
+      },
+      "id": "invoke-jarvis",
+      "name": "Invoke JARVIS Orchestrator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [20, -20]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.LINEAR_EVENT_URL }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{$env.LINEAR_API_KEY}}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_id: $json.event_id, event: $json.event, payload: $json.payload }) }}",
+        "options": {}
+      },
+      "id": "sync-linear",
+      "name": "Sync Linear Mission State",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [20, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, event_id: $json.event_id, routed_event: $json.event, status: 'accepted' }) }}",
+        "options": { "responseCode": 202 }
+      },
+      "id": "response",
+      "name": "Acknowledge Event",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [300, 0]
+    }
+  ],
+  "connections": {
+    "JARVIS Event Webhook": { "main": [[{ "node": "Normalize Event", "type": "main", "index": 0 }]] },
+    "Normalize Event": { "main": [[{ "node": "Route Event", "type": "main", "index": 0 }]] },
+    "Route Event": { "main": [[{ "node": "Persist Event to Supabase", "type": "main", "index": 0 }], [{ "node": "Persist Event to Supabase", "type": "main", "index": 0 }], [{ "node": "Invoke JARVIS Orchestrator", "type": "main", "index": 0 }], [{ "node": "Persist Event to Supabase", "type": "main", "index": 0 }], [{ "node": "Sync Linear Mission State", "type": "main", "index": 0 }]] },
+    "Persist Event to Supabase": { "main": [[{ "node": "Acknowledge Event", "type": "main", "index": 0 }]] },
+    "Invoke JARVIS Orchestrator": { "main": [[{ "node": "Acknowledge Event", "type": "main", "index": 0 }]] },
+    "Sync Linear Mission State": { "main": [[{ "node": "Acknowledge Event", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "jarvis-router-v1"
+}
