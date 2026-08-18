@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "offer": {
+    "name": "AutoAI Business Automation",
+    "monthly_usd": 1500
+  },
+  "orchestrator": "jarvis_orchestrator",
+  "agents": [
+    "lead_generation",
+    "research",
+    "qualification",
+    "outreach",
+    "client_onboarding",
+    "client_operations",
+    "finance_reporting",
+    "qa_verifier",
+    "prospect_discovery",
+    "company_enrichment",
+    "decision_maker_research",
+    "lead_scoring",
+    "offer_strategy",
+    "outreach_personalization",
+    "sales_followup",
+    "appointment_agent",
+    "proposal_agent",
+    "customer_activation",
+    "retention_upsell",
+    "revenue_analytics"
+  ],
+  "pipeline": [
+    "discover",
+    "enrich",
+    "qualify",
+    "offer",
+    "prepare_outreach",
+    "approval_gate",
+    "send",
+    "follow_up",
+    "appointment",
+    "proposal",
+    "checkout",
+    "payment_verification",
+    "activation",
+    "delivery",
+    "retention",
+    "upsell",
+    "revenue_reporting"
+  ],
+  "policy": {
+    "external_messages": "approval_required",
+    "pricing_changes": "approval_required",
+    "financial_writes": "approval_required",
+    "payment_verification": "automated_read_only",
+    "state_changes": "verification_required",
+    "evidence_required_for_qualification": true
+  },
+  "source_of_truth": {
+    "missions": "jarvis.missions",
+    "agents": "public.ai_agents",
+    "leads": "public.leads",
+    "pipeline_events": "public.autoai_pipeline_events",
+    "payments": "public.payments",
+    "revenue_attribution": "public.jarvis_revenue_attribution",
+    "memory": "public.agent_memory"
+  }
+}
