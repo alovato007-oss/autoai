@@ -14,8 +14,10 @@ importers:
       '@supabase/supabase-js':
         specifier: 2.112.2
         version: 2.112.2
-      '@vercel/analytics':
+      '@vercel/analytics' vercel/vercel-web-analytics-to-projec-3r5mhr
+        specifier: 2.0.1
         specifier: ^2.0.1
+
         version: 2.0.1(next@16.3.0(@babel/core@7.29.7)(@types/node@26.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       '@vercel/speed-insights':
         specifier: 2.0.0
