@@ -10,20 +10,22 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "latest",
+    "@supabase/ssr": "0.12.4",
+    "@supabase/supabase-js": "2.112.2",
     "@vercel/analytics": "^2.0.1",
-    "next": "latest",
-    "openai": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "@vercel/speed-insights": "2.0.0",
+    "next": "16.3.0",
+    "openai": "7.4.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "stripe": "17.3.0"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "eslint": "latest",
-    "eslint-config-next": "latest",
-    "typescript": "latest"
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "10.8.1",
+    "eslint-config-next": "16.3.0",
+    "typescript": "7.0.2"
   }
 }
