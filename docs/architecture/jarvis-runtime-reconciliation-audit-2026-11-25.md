@@ -1,7 +1,7 @@
 # JARVIS Runtime Reconciliation Audit
 
 **Audit date:** 2026-11-25  
-**Scope:** Read-only inspection of the AutoAI GitHub repository and connected Supabase project.  
+**Scope:** Read-only inspection of the AutoAI GitHub repository, the Hermes repository, and the connected Supabase project.  
 **Production changes:** None. No production records were inserted, updated, or deleted. No Edge Function was invoked.
 
 ## Executive decision
@@ -26,6 +26,12 @@ The live database currently reports seven rows in `public.jarvis_agency_dispatch
 The repository README describes the intended AutoAI/JARVIS architecture. However, `app/page.tsx` currently renders a lead-generation and lead-scoring landing page, queries `public.leads`, and labels the workflow as a live system. It does not render the canonical JARVIS mission, task, approval, execution, evidence, and verification state.
 
 The `public.leads` table is real and has nine rows, so the query is not necessarily a missing-table bug. The mismatch is product identity and operational visibility: lead pipeline metrics are being presented in place of JARVIS runtime health.
+
+## Hermes ACP implementation found
+
+A repository named `alovato007-oss/hermes-agent` exists in the connected GitHub account. Its `pyproject.toml` declares the `acp` extra with `agent-client-protocol==0.9.0` and exposes the `hermes-acp` executable through `acp_adapter.entry:main`. The inspected `acp_adapter/entry.py` starts `HermesACPAgent` with `acp.run_agent`; `acp_adapter/server.py` implements that ACP agent and wraps the Hermes `AIAgent`.
+
+This confirms there is a real ACP server implementation in the Hermes repository. It does **not** yet confirm that a reachable Hermes process is deployed, authenticated, configured with the required model/provider credentials, or able to accept a JARVIS task from the current environment. The repository identifies Nous Research as the upstream project; do not treat the existence of this source tree as proof that our JARVIS integration is already wired.
 
 ## Execution-path defects and risks
 
@@ -52,8 +58,8 @@ A trustworthy JARVIS mission lifecycle should be:
 
 - **Phase 1: contract and visibility.** Document the canonical schema and runtime contracts; change the AutoAI dashboard to show actual JARVIS state rather than claiming unverified live operation.
 - **Phase 2: worker.** Implement a separate, authenticated, idempotent dispatch worker. Do not drain or mutate the seven existing pending queue rows until their intended contract and age are understood.
-- **Phase 3: Hermes adapter.** Locate and validate the actual Hermes ACP server and define request/receipt authentication. Do not substitute the current execution recorder for Hermes.
-- **Phase 4: isolated test.** Use a disposable test mission with no email, payment, CRM, or production side effects. Confirm a Hermes receipt is persisted and independently verified.
+- **Phase 3: Hermes adapter.** Connect the JARVIS worker to the existing Hermes ACP server. Define authentication, request identity, timeout/cancellation behavior, and a trusted receipt format before permitting execution.
+- **Phase 4: isolated test.** Bring up a dedicated Hermes test process and use a disposable JARVIS mission with no email, payment, CRM, or production side effects. Confirm a Hermes receipt is persisted and independently verified.
 - **Phase 5: rollout.** Only after tests pass, consider queue migration/consumption and production deployment with explicit approval.
 
 ## Deployment constraints
@@ -64,4 +70,4 @@ A trustworthy JARVIS mission lifecycle should be:
 
 ## Immediate next engineering task
 
-Inspect the full repository and locate the Hermes ACP implementation. Then prepare a feature branch that adds a real JARVIS operations dashboard and tests its read-only data contract against the canonical `jarvis` schema. Keep all runtime execution disabled until the Hermes receipt contract and isolated test are in place.
+Prepare the AutoAI feature branch for a read-only JARVIS operations dashboard and define the Hermes ACP request/receipt contract. Then validate the Hermes process in isolation before adding a real dispatch worker. Keep all runtime execution disabled until the receipt contract and isolated test pass.
