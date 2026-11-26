@@ -66,6 +66,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Sign in to use AI prospect scoring." }, { status: 401 });
     }
 
+    const { data: withinQuota, error: quotaError } = await supabase.rpc(
+      "consume_ai_scoring_quota",
+      { p_limit: 10, p_window_seconds: 3600 }
+    );
+    if (quotaError) {
+      return NextResponse.json({ error: "AI scoring protection is not configured. Please try again later." }, { status: 503 });
+    }
+    if (!withinQuota) {
+      return NextResponse.json(
+        { error: "You have reached the scoring limit of 10 requests per hour." },
+        { status: 429, headers: { "Retry-After": "3600", "Cache-Control": "no-store" } }
+      );
+    }
+
     const declaredLength = Number(request.headers.get("content-length") ?? 0);
     if (declaredLength > 8192) {
       return NextResponse.json({ error: "Request is too large." }, { status: 413 });
