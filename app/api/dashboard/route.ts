@@ -24,7 +24,7 @@ export async function GET() {
       leads: rows.length,
       qualified,
       pipeline,
-      activeMissions: 0,
+      executionStatus: "NOT CONNECTED",
     },
   }, { headers: { "Cache-Control": "no-store" } });
 }
