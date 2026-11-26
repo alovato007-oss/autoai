@@ -4,7 +4,7 @@ import { assessHermesReadiness, normalizeLimit } from "./contract.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const executionUrlConfigured = Boolean(Deno.env.get("HERMES_EXECUTION_URL"));
+const configuredExecutionUrl = Deno.env.get("HERMES_EXECUTION_URL") ?? null;
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -17,8 +17,8 @@ Deno.serve(async (request: Request) => {
     return json({ error: "Server configuration is incomplete" }, 500);
   }
 
-  // Supabase JWT verification remains enabled. Restrict this operational
-  // preflight to the service-role caller; never accept a user JWT here.
+  // Supabase JWT verification must remain enabled. This additional check
+  // restricts this operational preflight to the configured service-role key.
   const authorization = request.headers.get("authorization") ?? "";
   if (authorization !== `Bearer ${serviceRoleKey}`) {
     return json({ error: "Service-role authorization required" }, 403);
@@ -51,7 +51,7 @@ Deno.serve(async (request: Request) => {
 
   const hermes = assessHermesReadiness(
     integrationResult.data,
-    executionUrlConfigured,
+    configuredExecutionUrl,
   );
   const pendingCount = (queueResult.data ?? []).filter((row) => row.status === "pending").length;
 
@@ -68,7 +68,7 @@ Deno.serve(async (request: Request) => {
     hermes: {
       ready: hermes.ready,
       reasons: hermes.reasons,
-      endpoint_configured: executionUrlConfigured,
+      endpoint_configured: Boolean(configuredExecutionUrl),
       recorded_state: integrationResult.data?.state ?? null,
       recorded_endpoint_type: integrationResult.data?.endpoint ?? null,
       last_verified_at: integrationResult.data?.last_verified_at ?? null,
