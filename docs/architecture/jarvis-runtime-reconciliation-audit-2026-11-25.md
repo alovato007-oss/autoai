@@ -1,0 +1,67 @@
+# JARVIS Runtime Reconciliation Audit
+
+**Audit date:** 2026-11-25  
+**Scope:** Read-only inspection of the AutoAI GitHub repository and connected Supabase project.  
+**Production changes:** None. No production records were inserted, updated, or deleted. No Edge Function was invoked.
+
+## Executive decision
+
+Keep AutoAI as the Next.js application and JARVIS as the orchestration/control plane. Keep Hermes as a separate execution runtime behind an authenticated ACP boundary. Supabase remains the operational source of truth. Do not create another mission/dispatch schema and do not relabel the unrelated Railway Shiplify services.
+
+## Confirmed database state
+
+The connected Supabase project already contains a canonical `jarvis` schema with:
+
+- `jarvis.missions`, `jarvis.tasks`, `jarvis.agents`
+- `jarvis.executions`, `jarvis.verifications`, `jarvis.approvals`
+- `jarvis.events`, `jarvis.mission_evidence`, `jarvis.memories`
+- `public.jarvis_system_state` as a separate public state projection
+
+There are overlapping legacy/parallel models in `public` and `agency`, including `public.jarvis_missions`, `agency.missions`, `agency.tasks`, and `agency.task_executions`. These models must not be treated as interchangeable with `jarvis.missions` and `jarvis.tasks`. New runtime work should target the canonical `jarvis` schema unless a deliberate migration plan says otherwise.
+
+The live database currently reports seven rows in `public.jarvis_agency_dispatch_queue` with status `pending`. Existing canonical records include six execution rows with status `succeeded`, but a stored status alone does not establish that Hermes performed the work.
+
+## Confirmed application mismatch
+
+The repository README describes the intended AutoAI/JARVIS architecture. However, `app/page.tsx` currently renders a lead-generation and lead-scoring landing page, queries `public.leads`, and labels the workflow as a live system. It does not render the canonical JARVIS mission, task, approval, execution, evidence, and verification state.
+
+The `public.leads` table is real and has nine rows, so the query is not necessarily a missing-table bug. The mismatch is product identity and operational visibility: lead pipeline metrics are being presented in place of JARVIS runtime health.
+
+## Execution-path defects and risks
+
+1. `jarvis-orchestrator-v3` creates a canonical mission and task, then calls `jarvis-agent-execute-v3` with `success: true`, a caller-provided result, and caller-provided evidence. This records an execution result but does not call Hermes or prove an external runtime executed the task.
+2. `jarvis-agent-execute-v3` accepts the result/evidence payload and writes it as a successful execution. It is an execution recorder, not a Hermes adapter.
+3. `jarvis-verifier-v4` checks completed tasks, succeeded execution records, and persisted mission evidence. Those checks are useful consistency checks, but evidence supplied by the orchestrator can still be fabricated unless it is bound to a trusted Hermes execution receipt.
+4. `jarvis-agency-service` expects the orchestrator response to contain nested `mission.id` and `task.id`, while the inspected `jarvis-orchestrator-v3` returns `mission_id` and `task_id` at the top level. This response-contract mismatch can break the service workflow.
+5. Multiple one-time E2E Edge Functions are deployed with JWT verification disabled, including `jarvis-e2e-runner-once`, `jarvis-e2e-runner-once-v2`, `jarvis-agency-e2e-once`, and `jarvis-agency-verifier-once`. One inspected agency E2E runner contains a hardcoded lead ID and a static run key. Do not invoke these public test endpoints or rely on them as production test harnesses.
+6. The `jarvis-outbound-dispatch` function can send real email when its provider credentials are configured. It is not the Hermes mission dispatcher and must remain separately gated.
+
+## Required target contract
+
+A trustworthy JARVIS mission lifecycle should be:
+
+1. JARVIS creates a mission and one or more queued tasks in `jarvis`.
+2. Approval policy is evaluated before any side effect. Tasks requiring approval remain blocked until an approval record is approved.
+3. A dedicated worker claims eligible tasks atomically and sends a signed, idempotent execution request to Hermes over ACP.
+4. Hermes returns a verifiable execution receipt containing the task/mission identifiers, runtime identity, request hash, result reference, timestamps, and outcome.
+5. JARVIS stores the receipt and evidence without allowing the caller to self-assert successful execution.
+6. The verifier checks the trusted receipt, expected postconditions, and persisted evidence. Only a passing verification may transition the mission to `VERIFIED`.
+7. Failed, timed-out, or unverifiable work remains failed/retryable and is never silently marked complete.
+
+## Safe implementation sequence
+
+- **Phase 1: contract and visibility.** Document the canonical schema and runtime contracts; change the AutoAI dashboard to show actual JARVIS state rather than claiming unverified live operation.
+- **Phase 2: worker.** Implement a separate, authenticated, idempotent dispatch worker. Do not drain or mutate the seven existing pending queue rows until their intended contract and age are understood.
+- **Phase 3: Hermes adapter.** Locate and validate the actual Hermes ACP server and define request/receipt authentication. Do not substitute the current execution recorder for Hermes.
+- **Phase 4: isolated test.** Use a disposable test mission with no email, payment, CRM, or production side effects. Confirm a Hermes receipt is persisted and independently verified.
+- **Phase 5: rollout.** Only after tests pass, consider queue migration/consumption and production deployment with explicit approval.
+
+## Deployment constraints
+
+- Vercel project creation for this repository was previously denied by the connected account's permissions. The visible Vercel team does not currently show this repository as a linked project.
+- Railway's prior trial-expired state prevented creating a dedicated worker project. Existing Shiplify services have malformed configuration and must not be renamed or repurposed without confirming their source and ownership.
+- No deployment, database migration, production function update, or outbound action was performed during this audit.
+
+## Immediate next engineering task
+
+Inspect the full repository and locate the Hermes ACP implementation. Then prepare a feature branch that adds a real JARVIS operations dashboard and tests its read-only data contract against the canonical `jarvis` schema. Keep all runtime execution disabled until the Hermes receipt contract and isolated test are in place.
