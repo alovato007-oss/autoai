@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { signout } from "@/app/login/actions";
 
 const fallback = { leads: [], stats: { leads: 0, qualified: 0, pipeline: 0, executionStatus: "NOT CONNECTED" } };
