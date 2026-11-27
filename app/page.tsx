@@ -17,6 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [scoring, setScoring] = useState(false);
   const [message, setMessage] = useState("");
+  const [requiresSignIn, setRequiresSignIn] = useState(false);
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [metrics, setMetrics] = useState([
     ["Prospects Found", "—"],
@@ -63,6 +64,7 @@ export default function Home() {
     event.preventDefault();
     setScoring(true);
     setMessage("");
+    setRequiresSignIn(false);
     setResult(null);
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(form.entries());
@@ -74,6 +76,7 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
+      if (response.status === 401) setRequiresSignIn(true);
       if (!response.ok) throw new Error(data.error ?? "Scoring failed");
       setResult(data);
     } catch (error) {
@@ -141,7 +144,7 @@ export default function Home() {
             <label>Website<input name="website" placeholder="https://example.com" /></label>
             <label>Why is this a fit?<textarea name="fit_reason" placeholder="Growing company with manual sales and operations workflows." rows={3} /></label>
             <button className="score-button" disabled={scoring}>{scoring ? "Analyzing…" : "Run AI Score →"}</button>
-            {message && <div className="notice">{message}</div>}
+            {message && <div className="notice">{message} {requiresSignIn && <a href="/login?next=%2F">Sign in or create an account</a>}</div>}
           </form>
 
           {result && (
