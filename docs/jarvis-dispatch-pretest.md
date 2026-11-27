@@ -13,6 +13,19 @@ The Supabase project currently records the Hermes integration as `configured`, e
 - The queue currently has no attached non-internal trigger.
 - `agency.tasks` and `agency.task_executions` are separate tables; the latter defaults its runtime to `hermes`.
 - `agency.integrations` records Hermes as local CLI only and not live-verified.
+- The canonical `jarvis` and `agency` schemas currently grant table privileges to `service_role`; keep those schemas out of direct browser access.
+
+## Readiness gate
+
+The preflight reports Hermes as ready only when all of these conditions hold:
+
+1. Integration state is exactly `verified`.
+2. A valid successful-verification timestamp exists.
+3. The registered endpoint is a valid HTTPS URL and is not `local-cli`.
+4. Integration metadata explicitly sets `live_remote_execution=true`.
+5. `HERMES_EXECUTION_URL` is configured and exactly matches the registered endpoint.
+
+This is a configuration gate, not a live health check. It does not prove the remote service is reachable, authenticated, or capable of returning a trusted execution receipt. Those checks belong in the future remote gateway handshake and signed callback protocol.
 
 ## Why the stale rows are not replayed
 
