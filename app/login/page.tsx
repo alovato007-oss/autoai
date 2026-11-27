@@ -1,10 +1,11 @@
 import { login, signup } from "./actions";
+import { safeInternalPath } from "@/lib/safe-redirect.mjs";
 
 type Props = { searchParams: Promise<{ error?: string; message?: string; next?: string }> };
 
 export default async function LoginPage({ searchParams }: Props) {
   const params = await searchParams;
-  const next = params.next?.startsWith("/") ? params.next : "/dashboard";
+  const next = safeInternalPath(params.next);
 
   return (
     <main style={{ maxWidth: 480, margin: "80px auto", padding: 24 }}>
