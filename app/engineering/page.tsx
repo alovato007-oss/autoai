@@ -32,7 +32,7 @@ export default function EngineeringDashboard() {
 
   useEffect(() => {
     void refresh();
-    const timer = window.setInterval(() => void refresh(), 30000);
+    const timer = window.setInterval(() => void refresh(), 300000);
     return () => window.clearInterval(timer);
   }, [refresh]);
 
@@ -46,7 +46,7 @@ export default function EngineeringDashboard() {
 
       {error && <div className="engineering-alert">{error}</div>}
       {loading && !snapshot ? <div className="engineering-panel">Connecting to GitHub telemetry…</div> : snapshot && <>
-        <div className="engineering-meta"><span>Repository: <b>{snapshot.repository}</b></span><span>Last checked: <b>{new Date(snapshot.checkedAt).toLocaleString()}</b></span><span>Auto-refresh: <b>30 seconds</b></span></div>
+        <div className="engineering-meta"><span>Repository: <b>{snapshot.repository}</b></span><span>Last checked: <b>{new Date(snapshot.checkedAt).toLocaleString()}</b></span><span>Auto-refresh: <b>5 minutes</b></span></div>
         <section className="engineering-metrics">
           <Metric label="Open pull requests" value={snapshot.summary.openPullRequests} />
           <Metric label="Draft pull requests" value={snapshot.summary.draftPullRequests} />
