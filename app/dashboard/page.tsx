@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const missionText = useMemo(() => data.stats.activeMissions > 0 ? "EXECUTING" : "READY", [data.stats.activeMissions]);
 
   return <main className="jarvis-shell">
-    <header className="jarvis-topbar"><div className="brand-wrap"><div className="bot-mark">◉</div><div><strong>JARVIS</strong><span> AGENCY COMMAND CENTER</span></div></div><div className="top-actions"><span className={`live-pill ${status === "LIVE" ? "live" : ""}`}><i /> {status}</span><form action={signout}><button className="ghost-btn">Sign out</button></form></div></header>
+    <header className="jarvis-topbar"><div className="brand-wrap"><div className="bot-mark">◉</div><div><strong>JARVIS</strong><span> AGENCY COMMAND CENTER</span></div></div><div className="top-actions"><a href="/engineering" className="ghost-btn" style={{textDecoration:"none"}}>Engineering</a><span className={`live-pill ${status === "LIVE" ? "live" : ""}`}><i /> {status}</span><form action={signout}><button className="ghost-btn">Sign out</button></form></div></header>
     <section className="jarvis-main">
       <div className="hero-row"><div><div className="eyebrow">AUTONOMOUS REVENUE OPERATIONS</div><h1>Agency Command Center</h1><p>One living dashboard for JARVIS, agents, missions, sales, evidence and verified outcomes.</p></div><div className="sync">Last sync<br/><b>{lastSync ? lastSync.toLocaleTimeString() : "—"}</b></div></div>
       <div className="dashboard-grid">
